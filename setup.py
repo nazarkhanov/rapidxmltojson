@@ -1,4 +1,5 @@
 from setuptools import setup, Extension
+from Cython.Build import cythonize
 
 
 with open('README.md', 'r') as f:
@@ -7,8 +8,8 @@ with open('README.md', 'r') as f:
 
 extension = Extension(
     name='rapidxmltojson',
-    sources=['src/rapidxmltojson.pyx'],
-    include_dirs=['src'],
+    sources=['rapidxmltojson.pyx'],
+    include_dirs=['include'],
     language='c++',
 )
 
@@ -23,7 +24,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/nazarkhanov/rapidxmltojson',
-    ext_modules=[extension],
+    ext_modules=cythonize([extension]),
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
