@@ -1,6 +1,11 @@
 [build-system]
 requires = ["setuptools", "wheel", "Cython"]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rapidxmltojson.pyx"]
+exclude = ["rapidxmltojson.pyi"]
+
 [project]
 name = "rapidxmltojson"
 version = "0.1.2"
