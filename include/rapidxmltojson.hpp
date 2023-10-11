@@ -6,6 +6,7 @@
 #include <string>
 #include <cctype>
 #include <cstring>
+#include <exception>
 
 #include "rapidxml/rapidxml.hpp"
 #include "rapidxml/rapidxml_utils.hpp"
@@ -35,6 +36,30 @@ static const bool xmltojson_numeric_support = false;
    <number>26.026</number>  ---> "number":26.026
 */
 /* [End]   This part is configurable */
+
+class xmltojson_parse_error: public std::runtime_error
+{
+public:
+    xmltojson_parse_error(const char *what, const std::exception& e)
+        : std::runtime_error(what)
+    {
+        m_message = std::string(this->what());
+        m_details = std::string(e.what());
+    }
+
+    xmltojson_parse_error(const char *what)
+        : std::runtime_error(what)
+    {
+    }
+
+    std::string GetString() {
+        return "Exception: " + m_message + ", Details: " + m_details;
+    }
+
+private:
+    std::string m_message;
+    std::string m_details;
+};
 
 // Avoided any namespace pollution.
 static bool xmltojson_has_digits_only(const char *input, bool *hasDecimal)
@@ -251,39 +276,65 @@ void xmltojson_traverse_node(rapidxml::xml_node<> *xmlnode, rapidjson::Value &js
     }
     else
     {
-        std::cerr << "err data!!" << std::endl;
+        throw xmltojson_parse_error("Invalid data");
     }
 }
 
 std::string xmltojson(const char *xml_str)
 {
-    //file<> fdoc("track_orig.xml"); // could serve another use case
-    rapidxml::xml_document<> *xml_doc = new rapidxml::xml_document<>();
-    xml_doc->parse<0> (const_cast<char *>(xml_str));
+    xmltojson_parse_error *error;
 
-    rapidjson::Document js_doc;
-    js_doc.SetObject();
-    rapidjson::Document::AllocatorType& allocator = js_doc.GetAllocator();
-
-    rapidxml::xml_node<> *xmlnode_chd;
-
-    for(xmlnode_chd = xml_doc->first_node(); xmlnode_chd; xmlnode_chd = xmlnode_chd->next_sibling())
+    try
     {
-        rapidjson::Value jsvalue_chd;
-        jsvalue_chd.SetObject();
-        //rapidjson::Value jsvalue_name(xmlnode_chd->name(), allocator);
-        //js_doc.AddMember(jsvalue_name, jsvalue_chd, allocator);
-        xmltojson_add_ns_prefix(xmlnode_chd);
-        xmltojson_traverse_node(xmlnode_chd, jsvalue_chd, allocator);
-        js_doc.AddMember(rapidjson::StringRef(xmlnode_chd->name()), jsvalue_chd, allocator);
+        //file<> fdoc("track_orig.xml"); // could serve another use case
+        rapidxml::xml_document<> *xml_doc = new rapidxml::xml_document<>();
+        xml_doc->parse<0> (const_cast<char *>(xml_str));
+
+        rapidjson::Document js_doc;
+        js_doc.SetObject();
+        rapidjson::Document::AllocatorType& allocator = js_doc.GetAllocator();
+
+        rapidxml::xml_node<> *xmlnode_chd;
+
+        for(xmlnode_chd = xml_doc->first_node(); xmlnode_chd; xmlnode_chd = xmlnode_chd->next_sibling())
+        {
+            rapidjson::Value jsvalue_chd;
+            jsvalue_chd.SetObject();
+            //rapidjson::Value jsvalue_name(xmlnode_chd->name(), allocator);
+            //js_doc.AddMember(jsvalue_name, jsvalue_chd, allocator);
+            xmltojson_add_ns_prefix(xmlnode_chd);
+            xmltojson_traverse_node(xmlnode_chd, jsvalue_chd, allocator);
+            js_doc.AddMember(rapidjson::StringRef(xmlnode_chd->name()), jsvalue_chd, allocator);
+        }
+
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        js_doc.Accept(writer);
+        delete xml_doc;
+
+        return buffer.GetString();
+    }
+    catch (xmltojson_parse_error& e) {
+        error = &e;
+    }
+    catch (const rapidxml::parse_error& e)
+    {
+        error = new xmltojson_parse_error("Parse error", e);
+    }
+    catch (const std::runtime_error& e)
+    {
+        error = new xmltojson_parse_error("Runtime error", e);
+    }
+    catch (const std::exception& e)
+    {
+        error = new xmltojson_parse_error("Error", e);        
+    }
+    catch (...)
+    {
+        error = new xmltojson_parse_error("Unknown error");
     }
 
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    js_doc.Accept(writer);
-    delete xml_doc;
-
-    return buffer.GetString();
+    return error->GetString();
 }
 
 #endif
