@@ -3,13 +3,13 @@ requires = ["setuptools", "wheel", "Cython"]
 
 [project]
 name = "rapidxmltojson"
-version = "0.2.1"
+version = "0.2.2"
 authors = [
   { name="Alisher Nazarkhanov", email="nazarkhanov.alisher.dev@gmail.com" },
 ]
 description = "rapidxmltojson"
 readme = "README.md"
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
