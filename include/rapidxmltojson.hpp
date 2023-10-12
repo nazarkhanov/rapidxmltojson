@@ -165,6 +165,21 @@ void xmltojson_add_ns_prefix(rapidxml::xml_node<> *xmlnode) {
     xmlnode->name(xmlnode_name_with_prefix);
 }
 
+void xmltojson_strip_text(rapidxml::xml_node<> *xmlnode) {
+    char* xmlnode_start = xmlnode->value();
+    char* xmlnode_end = xmlnode_start;
+
+    while (*xmlnode_start) {
+        if (!std::isspace(static_cast<unsigned char>(*xmlnode_start))) {
+            *xmlnode_end = *xmlnode_start;
+            xmlnode_end++;
+        }
+        xmlnode_start++;
+    }
+
+    *xmlnode_end = '\0';
+}
+
 void xmltojson_traverse_node(rapidxml::xml_node<> *xmlnode, rapidjson::Value &jsvalue, rapidjson::Document::AllocatorType& allocator)
 {
     // std::cout << "this: " << xmlnode->type() << " name: " << xmlnode->name() << " value: " << xmlnode->value() << '\n';
@@ -246,6 +261,7 @@ void xmltojson_traverse_node(rapidxml::xml_node<> *xmlnode, rapidjson::Value &js
             for(xmlnode_chd = xmlnode->first_node(); xmlnode_chd; xmlnode_chd = xmlnode_chd->next_sibling())
             {
                 xmltojson_add_ns_prefix(xmlnode_chd);
+                xmltojson_strip_text(xmlnode_chd);
 
                 std::string current_name;
                 const char *name_ptr = NULL;
@@ -298,6 +314,8 @@ std::string xmltojson(const char *xml_str)
 
         for(xmlnode_chd = xml_doc->first_node(); xmlnode_chd; xmlnode_chd = xmlnode_chd->next_sibling())
         {
+            xmltojson_strip_text(xmlnode_chd);
+
             rapidjson::Value jsvalue_chd;
             jsvalue_chd.SetObject();
             //rapidjson::Value jsvalue_name(xmlnode_chd->name(), allocator);
