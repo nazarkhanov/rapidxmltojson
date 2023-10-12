@@ -40,20 +40,26 @@ static const bool xmltojson_numeric_support = false;
 class xmltojson_parse_error: public std::runtime_error
 {
 public:
-    xmltojson_parse_error(const char *what, const std::exception& e)
-        : std::runtime_error(what)
+    xmltojson_parse_error(const char *message, const std::exception& e)
+        : std::runtime_error(message)
     {
-        m_message = std::string(this->what());
+        m_message = std::string(what());
         m_details = std::string(e.what());
     }
 
-    xmltojson_parse_error(const char *what)
-        : std::runtime_error(what)
+    xmltojson_parse_error(const char *message)
+        : std::runtime_error(message)
     {
+        m_message = std::string(message);
     }
 
+    virtual ~xmltojson_parse_error() throw() {}
+
     std::string GetString() {
-        return "Exception: " + m_message + ", Details: " + m_details;
+        if (!m_details.empty())
+            return "Exception: " + m_message + ", Details: " + m_details;
+
+        return "Exception: " + m_message;
     }
 
 private:
