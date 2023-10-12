@@ -1,6 +1,10 @@
 name: Build
 
-on: [push]
+on:
+  push:
+    tags:
+      - '**'
+  workflow_dispatch:
 
 jobs:
   build_wheels:
@@ -41,6 +45,7 @@ jobs:
           path: dist/*.tar.gz
 
   upload_pypi:
+    name: Upload to PyPI
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     environment: pypi
