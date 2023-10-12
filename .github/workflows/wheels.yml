@@ -24,7 +24,8 @@ jobs:
 
       - name: Build wheels
         env:
-          CIBW_SKIP: cp36-*
+          CIBW_SKIP: '{cp36,cp37}-*'
+          CIBW_ARCHS_MACOS: 'x86_64 arm64'
         run: python -m cibuildwheel --output-dir wheelhouse
 
       - uses: actions/upload-artifact@v3
