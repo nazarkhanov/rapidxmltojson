@@ -12,5 +12,6 @@ extension = Extension(
 
 
 setup(
+    name='rapidxmltojson',
     ext_modules=cythonize([extension]),
 )
