@@ -5,8 +5,7 @@ cdef extern from "rapidxmltojson.hpp":
     string xmltojson(char*)
 
 
-class RapidXMLError(Exception):
-    pass
+class RapidXMLError(Exception): ...
 
 
 def parse(xml):
