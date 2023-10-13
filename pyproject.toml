@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel", "Cython"]
 
 [project]
 name = "rapidxmltojson"
-version = "0.2.2"
+version = "0.2.3"
 authors = [
   { name="Alisher Nazarkhanov", email="nazarkhanov.alisher.dev@gmail.com" },
 ]
@@ -14,7 +14,7 @@ classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3",
   "Topic :: Text Processing :: Markup :: XML",
 ]
 
