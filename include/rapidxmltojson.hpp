@@ -158,11 +158,14 @@ void xmltojson_add_attributes(rapidxml::xml_node<> *xmlnode, rapidjson::Value &j
 }
 
 void xmltojson_add_ns_prefix(rapidxml::xml_node<> *xmlnode) {
+    if (xmlnode == nullptr) return;
+
     char *xmlnode_prefix = xmlnode->prefix();
     if (xmlnode_prefix == nullptr) return;
 
     char *xmlnode_name = xmlnode->name();
-    char *xmlnode_name_with_prefix = new char[strlen(xmlnode_prefix) + strlen(xmlnode_name) + 1];
+    if (xmlnode_name == nullptr) return;
+    char *xmlnode_name_with_prefix = new char[strlen(xmlnode_prefix) + strlen(xmlnode_name) + 2];
 
     strcpy(xmlnode_name_with_prefix, xmlnode_prefix);
     strcat(xmlnode_name_with_prefix, ":");
@@ -172,7 +175,11 @@ void xmltojson_add_ns_prefix(rapidxml::xml_node<> *xmlnode) {
 }
 
 void xmltojson_strip_text(rapidxml::xml_node<> *xmlnode) {
+    if (xmlnode == nullptr) return;
+
     char* xmlnode_start = xmlnode->value();
+    if (xmlnode_start == nullptr) return;
+
     char* xmlnode_end = xmlnode_start;
 
     while (*xmlnode_start) {
