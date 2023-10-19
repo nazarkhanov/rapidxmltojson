@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel", "Cython"]
 
 [project]
 name = "rapidxmltojson"
-version = "0.2.4"
+version = "0.2.5"
 authors = [
   { name="Alisher Nazarkhanov", email="nazarkhanov.alisher.dev@gmail.com" },
 ]
