@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <cctype>
 #include <cstring>
@@ -165,7 +166,8 @@ void xmltojson_add_ns_prefix(rapidxml::xml_node<> *xmlnode) {
 
     char *xmlnode_name = xmlnode->name();
     if (xmlnode_name == nullptr) return;
-    char *xmlnode_name_with_prefix = new char[strlen(xmlnode_prefix) + strlen(xmlnode_name) + 2];
+    char *xmlnode_name_with_prefix = xmlnode->document()->allocate_string<char>(
+        nullptr, strlen(xmlnode_prefix) + strlen(xmlnode_name) + 2);
 
     strcpy(xmlnode_name_with_prefix, xmlnode_prefix);
     strcat(xmlnode_name_with_prefix, ":");
@@ -291,12 +293,10 @@ void xmltojson_traverse_node(rapidxml::xml_node<> *xmlnode, rapidjson::Value &js
 
 std::string xmltojson(const char *xml_str)
 {
-    xmltojson_parse_error *error;
-
     try
     {
         //file<> fdoc("track_orig.xml"); // could serve another use case
-        rapidxml::xml_document<> *xml_doc = new rapidxml::xml_document<>();
+        std::unique_ptr<rapidxml::xml_document<> > xml_doc(new rapidxml::xml_document<>());
         xml_doc->parse<0> (const_cast<char *>(xml_str));
 
         rapidjson::Document js_doc;
@@ -319,31 +319,28 @@ std::string xmltojson(const char *xml_str)
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         js_doc.Accept(writer);
-        delete xml_doc;
 
         return buffer.GetString();
     }
     catch (xmltojson_parse_error& e) {
-        error = &e;
+        return e.GetString();
     }
     catch (const rapidxml::parse_error& e)
     {
-        error = new xmltojson_parse_error("Parse error", e);
+        return xmltojson_parse_error("Parse error", e).GetString();
     }
     catch (const std::runtime_error& e)
     {
-        error = new xmltojson_parse_error("Runtime error", e);
+        return xmltojson_parse_error("Runtime error", e).GetString();
     }
     catch (const std::exception& e)
     {
-        error = new xmltojson_parse_error("Error", e);        
+        return xmltojson_parse_error("Error", e).GetString();
     }
     catch (...)
     {
-        error = new xmltojson_parse_error("Unknown error");
+        return xmltojson_parse_error("Unknown error").GetString();
     }
-
-    return error->GetString();
 }
 
 #endif
